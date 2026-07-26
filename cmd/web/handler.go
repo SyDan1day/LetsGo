@@ -9,7 +9,7 @@ import (
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 	files := []string{"./ui/html/base.tmpl",
@@ -17,21 +17,19 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		"./ui/html/pages/home.tmpl"}
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.errorLog.Print(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		app.errorLog.Print(err.Error())
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		app.serverError(w, err)
 	}
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 	fmt.Fprintf(w, "Display a specific view on id:%d\n", id)
@@ -43,7 +41,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		//w.Header()["X-XSS-Protection"] = []string{"1; mode=block"}
 		//w.Header().Set("X-XSS-Protection", "1; mode=block")
 		//w.Header().Add("Cache-Control", "public")
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Create a new snippet"))
