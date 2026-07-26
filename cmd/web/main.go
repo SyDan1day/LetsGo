@@ -1,11 +1,18 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
+	addr := flag.String("addr", ":4000", "HTTP network address")
+	flag.Parse()
+
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	mux := http.NewServeMux()
 	// 实际上
 	// fileServer := http.FileServer(http.Dir("./ui"))
@@ -18,10 +25,10 @@ func main() {
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
-	log.Print("Starting server on port:4000")
+	infoLog.Printf("Starting server on port%s", *addr)
 	//ListenAndServe的第二个参数是Handler,mux也实现了ServeHTTP方法，因此也可以视作特殊的http.Handler
-	err := http.ListenAndServe(":4000", mux)
+	err := http.ListenAndServe(*addr, mux)
 	if err != nil {
-		log.Fatal(err)
+		errorLog.Fatal(err)
 	}
 }
